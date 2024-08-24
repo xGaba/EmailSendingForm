@@ -50,6 +50,21 @@ const email = {
             spinner.classList.remove('flex');
             spinner.classList.add('hidden');
 
+            // Crear el enlace mailto
+            const emailTo = email.email;
+            const subject = encodeURIComponent(email.asunto);
+            const body = encodeURIComponent(email.mensaje);
+            let mailtoLink = `mailto:${emailTo}?subject=${subject}&body=${body}`;
+
+            // Si el campo CC tiene contenido, lo añadimos al enlace mailto
+            if (email.cc) {
+                const cc = encodeURIComponent(email.cc);
+                mailtoLink += `&cc=${cc}`;
+            }
+
+            // Abrir la aplicación de correo predeterminada con los datos del formulario
+            window.location.href = mailtoLink;
+
             resetFormulario();
 
             //Crear una alerta
@@ -67,14 +82,6 @@ const email = {
 
     function validar(e) { 
         
-        //Validar si el formato del campo CC es válido
-        if (e.target.id === 'cc' && !validarEmail(e.target.value)){
-            mostrarAlerta('El campo CC no es válido', e.target.parentElement);
-            email[e.target.name] = '';
-            comprobarEmail();
-            return;
-        }
-        
         //Validar campos si hay escrito o no
         if  (e.target.value.trim() === ''){
             mostrarAlerta(`El campo ${e.target.id} es obligatorio`, e.target.parentElement);
@@ -82,7 +89,7 @@ const email = {
             comprobarEmail();
             return;
         };
-        
+
         //Validar si el formato del campo email es válido
         if (e.target.id === 'email' && !validarEmail(e.target.value)){
             mostrarAlerta('El campo email no es válido', e.target.parentElement);
@@ -90,6 +97,14 @@ const email = {
             comprobarEmail();
             return;
         };
+
+        //Validar si el formato del campo CC es válido
+        if (e.target.id === 'cc' && !validarEmail(e.target.value)){
+            mostrarAlerta('El campo CC no es válido', e.target.parentElement);
+            email[e.target.name] = '';
+            comprobarEmail();
+            return;
+        }
 
         limpiarAlerta(e.target.parentElement);
         
@@ -111,6 +126,10 @@ const email = {
         error.textContent = mensaje;
         error.classList.add('bg-red-600', 'p-2', 'text-white', 'text-center', 'error')
         referencia.appendChild(error)
+
+        if(mensaje === 'El campo cc es obligatorio'){
+            limpiarAlerta(referencia)
+        }
     }
 
     //Limpiando HMTL previo a generar más
@@ -130,7 +149,7 @@ const email = {
     };
  
     function comprobarEmail(){
-        if (Object.values(email).includes('')){
+        if (!email.email || !email.asunto || !email.mensaje){
             btnSubmit.classList.add('opacity-50');
             btnSubmit.disabled = true;
             return;
@@ -147,8 +166,6 @@ const email = {
         email.mensaje = '';
         formulario.reset();
         comprobarEmail();
-        limpiarAlerta();
     }
-    
 });
 
